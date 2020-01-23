@@ -43,7 +43,7 @@ namespace ESP8266Azure {
     //% pw.defl=your_pw
     export function connectWifi(tx: SerialPin, rx: SerialPin, baudrate: BaudRate, ssid: string, pw: string) {
         wifi_connected = false
-        Azure_connected = false
+        azure_connected = false
         serial.redirect(
             tx,
             rx,

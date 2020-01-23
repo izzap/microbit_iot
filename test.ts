@@ -1,4 +1,4 @@
-ESP8266Azure.initialize_wifi(
+ESP8266Azure.connectWifi(
 SerialPin.P0,
 SerialPin.P1,
 BaudRate.BaudRate115200,

@@ -56,36 +56,15 @@ namespace ESP8266Azure {
         wifi_connected = waitResponse()
         basic.pause(100)
     }
-
-    /**
-    * Connect to Azure and upload data. It would not upload anything if it failed to connect to Wifi or Azure.
-    * https://docs.microsoft.com/en-us/azure/iot-hub/quickstart-send-telemetry-node
-    * https://blogs.msdn.microsoft.com/chmitch/2016/11/16/sending-events-to-iot-hub-over-http-via-rest/
-    * This is TODO:
-    
-    export function pushTelemetryToAzure(value1: number, value2: number, value3: number, value4: number, value5: number, value6: number, value7: number, value8: number) {
-        
-        if (wifi_connected ) {
-            Azure_connected = false
-            sendAT("AT+CIPSTART=\"TCP\",\"" + [AZURE ADDRESS] + "\",80", 0) // connect to website server
-            Azure_connected = waitResponse()
-            basic.pause(100)
-            if (Azure_connected) {
-                last_upload_successful = false
-                let str: string = "GET /update?api_key=" + write_api_key + "&field1=" + n1 + "&field2=" + n2 + "&field3=" + n3 + "&field4=" + n4 + "&field5=" + n5 + "&field6=" + n6 + "&field7=" + n7 + "&field8=" + n8
-                sendAT("AT+CIPSEND=" + (str.length + 2))
-                sendAT(str, 0) // upload data
-                last_upload_successful = waitResponse()
-                basic.pause(100)
-            }
-        }
-    }
-    */
    
+    /**
+     * Get Workday
+     */
+    //% block="Get workday"
     export function GetWorkDay() {
         if (wifi_connected) {
             sendAT("AT+CIPSTART=\"TCP\",\"https://workassistantapi.azurewebsites.net\",443", 0) // connect to website server
-            Azure_connected = waitResponse()
+            azure_connected = waitResponse()
             basic.pause(100)
 
             if (azure_connected) {

@@ -76,7 +76,7 @@ namespace ESP8266Azure {
                 last_upload_successful = waitResponse()
                 basic.pause(100)
 
-                return "success"
+                return "success http"
             //}
             //return "no server"
         }

@@ -65,20 +65,20 @@ namespace ESP8266Azure {
     export function GetWorkDay() : string {
         if (wifi_connected) {
             sendAT("AT+CIPSTART=\"TCP\",\"https://workassistantapi.azurewebsites.net\",443", 0) // connect to website server
-            azure_connected = waitResponse()
+            //azure_connected = waitResponse()
             basic.pause(100)
 
-            if (azure_connected) {
+            //if (azure_connected) {
                 let str: string = "GET /api/workday"
                 sendAT("AT+CIPSEND=" + str.length +2)
                 sendAT(str, 0)
 
-                last_upload_successful = waitResponse()
+                //last_upload_successful = waitResponse()
                 basic.pause(100)
 
-                return "success"
-            }
-            return "no server"
+                return "success maybe"
+            //}
+            //return "no server"
         }
 
         return "no wifi"

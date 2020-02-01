@@ -57,6 +57,25 @@ namespace ESP8266Azure {
         basic.pause(100)
     }
 
+    /**
+     * Read response
+     */
+    //% block="Read response"
+    function readResponse(): string {
+        let response: string = ""
+        let time: number = input.runningTime()
+        while (true) {
+            response += serial.readString()
+            if (response.length > 10) {
+                break;
+            }
+
+            if (input.runningTime() - time > 30000) {
+                break
+            }
+        }
+        return response
+    }
    
     /**
      * Get Workday
@@ -65,20 +84,17 @@ namespace ESP8266Azure {
     export function GetWorkDay() : string {
         if (wifi_connected) {
             sendAT("AT+CIPSTART=\"TCP\",\"http://workassistantapi.azurewebsites.net\",80", 0) // connect to website server
-            azure_connected = waitResponse()
+
+            basic.pause(100)
+           
+            let str: string = "GET /api/workday"
+            sendAT("AT+CIPSEND=" + str.length +2)
+            sendAT(str, 0)
+
             basic.pause(100)
 
-            //if (azure_connected) {
-                let str: string = "GET /api/workday"
-                sendAT("AT+CIPSEND=" + str.length +2)
-                sendAT(str, 0)
+            return "Done sending"
 
-                last_upload_successful = waitResponse()
-                basic.pause(100)
-
-                return "success http"
-            //}
-            //return "no server"
         }
 
         return "no wifi"

@@ -61,7 +61,7 @@ namespace ESP8266Azure {
      * Read response
      */
     //% block="Read response"
-    function readResponse(): string {
+    export function readResponse(): string {
         let response: string = ""
         let time: number = input.runningTime()
         while (true) {

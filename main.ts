@@ -98,6 +98,26 @@ z
 
         return "no wifi"
     }
+
+        /**
+     * Read response
+     */
+    //% block="Read response"
+    export function readResponse(): string {
+        let response: string = ""
+        let time: number = input.runningTime()
+        while (true) {
+            response += serial.readString()
+            if (response.length > 10) {
+                break;
+            }
+
+            if (input.runningTime() - time > 30000) {
+                break
+            }
+        }
+        return response
+    }
     
     /**
     * Wait between uploads

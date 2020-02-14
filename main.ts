@@ -16,6 +16,45 @@ enum Newline {
     CR
 }
 
+OLED.init(128, 64)
+OLED.writeStringNewLine("Booting up")
+PIT.initWIFI(SerialPin.P8, SerialPin.P12, BaudRate.BaudRate115200)
+OLED.writeStringNewLine("Ready")
+PIT.connectWifi("SSID", "PWD")
+OLED.writeStringNewLine("Connecting")
+PIT.wait(5000)
+basic.forever(function () {
+    OLED.clear()
+    if (PIT.wifiState(true)) {
+        OLED.writeStringNewLine("Connected")
+        OLED.writeStringNewLine("Get")
+        PIT.testGet("http://gf-web-site-pitapprentices-s.azurewebsites.net", 80)
+        PIT.wait(5000)
+        PIT.testPost("http://gf-web-site-pitapprentices-s.azurewebsites.net", 80)
+        /*PIT.executeHttpMethod(
+            HttpMethod.GET,
+            "http://gf-web-site-pitapprentices-s.azurewebsites.net",
+            80,
+            "/data"
+        )
+        PIT.wait(5000)
+        OLED.writeStringNewLine("Post")
+        PIT.executeHttpMethod(
+            HttpMethod.POST,
+            "http://gf-web-site-pitapprentices-s.azurewebsites.net",
+            80,
+            "data",
+            "Content-Type: application/json, Content-lenght: 12",
+            "{'data': 'BanjoNinja'}"
+        )
+        OLED.writeStringNewLine("Done posting")*/
+    } else {
+        OLED.writeStringNewLine("Disconnected")
+        PIT.connectWifi("JensLyn", "BobaFett")
+        OLED.writeStringNewLine("Connecting")
+    }
+    PIT.wait(5000)
+})
 
 /**
  * MakeCode extension for Elecfreak IOT ESP8266 Wifi modules and Azure IOT
@@ -28,6 +67,7 @@ namespace PIT {
     let last_upload_successful: boolean = false
     let userToken_def: string = ""
     let topic_def: string = ""
+    let pauseBaseValue: number = 1000
 
     const EVENT_ON_ID = 100
     const EVENT_ON_Value = 200
@@ -64,7 +104,7 @@ namespace PIT {
             if (serial_str.includes("ERROR") || serial_str.includes("FAIL")) {
                 break
             }
-            if (input.runningTime() - time > 5000) {
+            if (input.runningTime() - time > 30000) {
                 break
             }
         }
@@ -90,6 +130,7 @@ namespace PIT {
         sendAT("AT+RST", 1000) // reset
         basic.pause(100)
     }
+
     /**
     * connect to Wifi router
     */
@@ -104,7 +145,27 @@ namespace PIT {
         wifi_connected = waitResponse()
         basic.pause(100)
     }
-    
+
+    export function testGet(host: string, port: number): void {
+        let data: string = "AT+CIPSTART=\"TCP\",\"" + host + "\"," + port
+        sendAT(data, pauseBaseValue * 6)
+        sendAT("AT+CIPSEND=9", 5000)
+        sendAT("GET /data")
+
+    }
+
+    export function testPost(host: string, port: number): void {
+        let data: string = "AT+CIPSTART=\"TCP\",\"" + host + "\"," + port
+        sendAT(data, pauseBaseValue * 6)
+
+        data = "POST /data HTTP/1.1\r\nHost: " + host + "\r\n" + "Content-Type: application/json\r\nContent-Length: 18\r\n"
+            + "{\"data\":\"Eurika!\"}"
+
+        sendAT("AT+CIPSEND=" + data.length + 2, 5000)
+        sendAT(data + "\u000D" + "\u000A")
+
+    }
+
     /**
      * Execute HTTP method.
      * @param method HTTP method, eg: HttpMethod.GET
@@ -131,23 +192,40 @@ namespace PIT {
         }
         // Establish TCP connection:
         let data: string = "AT+CIPSTART=\"TCP\",\"" + host + "\"," + port
+        OLED.clear()
+        OLED.writeStringNewLine(data)
+
         sendAT(data, pauseBaseValue * 6)
 
         api_connected = waitResponse()
         basic.pause(100)
 
-        data = myMethod + " " + urlPath + " HTTP/1.1" + "\u000D" + "\u000A"
-            + "Host: " + host + "\u000D" + "\u000A"
+        if (api_connected) {
+            OLED.writeStringNewLine("API connected")
+        } else {
+            OLED.writeStringNewLine("API not connected")
+        }
+
+        //OLED.clear()
+
+        data = myMethod + " " + urlPath + " HTTP/1.1" + "\u000D" + "\u000A" // + "Host: " + host + "\u000D" + "\u000A"
+
+        // data = "GET /data"
+
         if (headers && headers.length > 0) {
             data += headers + "\u000D" + "\u000A"
         }
         if (data && data.length > 0) {
             data += "\u000D" + "\u000A" + body + "\u000D" + "\u000A"
         }
+
         data += "\u000D" + "\u000A"
         // Send data:
-        sendAT("AT+CIPSEND=" + (data.length + 2), pauseBaseValue * 3)
+        sendAT("AT+CIPSEND=" + (data.length), pauseBaseValue * 3)
         sendAT(data, pauseBaseValue * 6)
+        OLED.writeStringNewLine(data)
+        last_upload_successful = waitResponse()
+
         // Close TCP connection:
         sendAT("AT+CIPCLOSE", pauseBaseValue * 3)
     }
@@ -174,7 +252,7 @@ namespace PIT {
         }
     }
 
-    
+
     /**
     * Check if ESP8266 successfully uploaded data to ThingSpeak
     */
